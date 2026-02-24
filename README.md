@@ -1,36 +1,53 @@
 # CasaFresh Mission Control
 
-Internal operations dashboard for CasaFresh — the command center for running the vacation home cleaning and AC maintenance business.
+Internal operations dashboard — live agent activity, business snapshot, and task history.
 
-## What It Does
-
-A real-time operations dashboard that gives a bird's-eye view of the CasaFresh business — jobs, leads, revenue, and agent activity.
-
-## Features
-
-- Live business overview and KPI tracking
-- Job status monitoring across all client properties
-- Revenue and pipeline visibility
-- Agent activity feed (Jarvis AI assistant integration)
-- Property management and client overview
-- Mobile-responsive dark-themed UI
-
-## Tech Stack
-
-- **Next.js** — React framework
-- **TypeScript** — type safety
-- **Tailwind CSS** — styling
-- **Real-time updates** — live data feeds
-
-## Getting Started
+## Setup
 
 ```bash
+cd /Users/jarvis/.openclaw/workspace-coder/mission-control
 npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000)
+## Access
 
-## Business Context
+- **Local:** http://localhost:3000
+- **Network (from phone):** http://\<mac-mini-ip\>:3000
+  - Find IP: System Settings → Network → Wi-Fi → IP Address
 
-CasaFresh is a Florida-based startup offering vacation home cleaning and AC maintenance to Airbnb/VRBO property owners. Mission Control is the internal tool for managing day-to-day operations.
+## Stack
+
+- Next.js 15 (App Router)
+- Tailwind CSS (dark theme)
+- TypeScript
+- React 19
+- Polls every 5s — no WebSocket needed
+
+## Data Sources
+
+| Widget | Source |
+|---|---|
+| Agent Status | `/Users/jarvis/.openclaw/agents/*/sessions/*.jsonl` |
+| Live Activity | All JSONL files modified in last 24h |
+| Business Snapshot | `workspace-main/properties.md`, `workspace-business/leads.md`, etc. |
+
+## Agent Colors
+
+| Agent | Color |
+|---|---|
+| Jarvis | `#63D866` (lime green) |
+| CodeBot | `#3A7BC8` (blue) |
+| ReviewBot | `#B49A60` (gold) |
+| BizBot | `#9AED9C` (mint) |
+
+## Status Logic
+
+- **Active** — last message < 5 minutes ago
+- **Idle** — last message < 30 minutes ago  
+- **Offline** — no recent activity
+
+## Notes
+
+- CORS is open (`*`) on API routes — intentional for local network phone access
+- Fonts loaded from Google Fonts CDN; falls back to system-ui if offline

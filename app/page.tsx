@@ -13,7 +13,9 @@ import SystemHealth from '@/components/SystemHealth'
 import ArticleTracker from '@/components/ArticleTracker'
 import VideoTracker from '@/components/VideoTracker'
 import CalendarView from '@/components/CalendarView'
-import GlobalSearch from '@/components/GlobalSearch'
+import GoalTracker from '@/components/GoalTracker'
+import QuickActions from '@/components/QuickActions'
+import HeaderBar from '@/components/HeaderBar'
 
 interface Agent {
   id: string
@@ -48,7 +50,7 @@ interface Snapshot {
 const POLL_INTERVAL = 5000
 const SOUND_ENABLED_KEY = 'casafresh-sound-enabled'
 
-type ViewType = 'office' | 'analytics' | 'activity' | 'memory' | 'calendar' | 'articles' | 'videos' | 'settings'
+type ViewType = 'office' | 'calendar' | 'goals' | 'analytics' | 'activity' | 'memory' | 'articles' | 'videos' | 'settings'
 
 export default function DashboardPage() {
   const [agents, setAgents] = useState<Agent[]>([])
@@ -59,7 +61,6 @@ export default function DashboardPage() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [soundEnabled, setSoundEnabled] = useState(false)
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null)
-  const [isSearchOpen, setIsSearchOpen] = useState(false)
   
   const previousAgentStatus = useRef<{ [agentId: string]: string }>({})
 
@@ -71,24 +72,13 @@ export default function DashboardPage() {
     }
   }, [])
 
-  // Cmd+K global keyboard shortcut for search
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        e.preventDefault()
-        setIsSearchOpen(prev => !prev)
-      }
-    }
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [])
-
   // Play notification sound when agent status changes
   const playNotificationSound = useCallback(() => {
     if (!soundEnabled) return
     
     try {
-      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
+      const AudioCtx = window.AudioContext ?? (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext
+      const audioContext = new AudioCtx()
       const oscillator = audioContext.createOscillator()
       const gainNode = audioContext.createGain()
       
@@ -163,10 +153,6 @@ export default function DashboardPage() {
     }
   }, [currentView])
 
-  const handleViewChange = (view: string) => {
-    setCurrentView(view as ViewType)
-  }
-
   // Render different views based on currentView
   const renderMainContent = () => {
     if (loading && agents.length === 0) {
@@ -190,12 +176,16 @@ export default function DashboardPage() {
     switch (currentView) {
       case 'office':
         return (
-          <div className="flex-1 flex items-center justify-center p-4 md:p-8 animate-fadeIn overflow-hidden">
-            <div className="w-full h-full max-w-7xl">
-              <OfficeView agents={agents} />
-            </div>
+          <div className="flex-1 animate-fadeIn overflow-hidden">
+            <OfficeView agents={agents} />
           </div>
         )
+
+      case 'calendar':
+        return <CalendarView />
+
+      case 'goals':
+        return <GoalTracker />
 
       case 'analytics':
         return (
@@ -242,9 +232,6 @@ export default function DashboardPage() {
             <MemoryViewer />
           </div>
         )
-
-      case 'calendar':
-        return <CalendarView />
 
       case 'articles':
         return <ArticleTracker />
@@ -352,10 +339,9 @@ export default function DashboardPage() {
       <Sidebar
         agents={agents}
         currentView={currentView}
-        onViewChange={handleViewChange}
+        onViewChange={(view: ViewType) => setCurrentView(view)}
         isCollapsed={sidebarCollapsed}
         onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
-        onSearchOpen={() => setIsSearchOpen(true)}
       />
 
       {/* Mobile Menu Button */}
@@ -394,6 +380,10 @@ export default function DashboardPage() {
 
         {/* Content */}
         <div className="flex-1 flex flex-col relative overflow-hidden" style={{ zIndex: 1 }}>
+          <HeaderBar
+            agentCount={agents.length}
+            activeCount={agents.filter(a => a.status === 'active').length}
+          />
           {renderMainContent()}
         </div>
 
@@ -424,14 +414,8 @@ export default function DashboardPage() {
         </div>
       </main>
 
-      {/* Global Search Modal */}
-      {isSearchOpen && (
-        <GlobalSearch
-          activity={activity}
-          onViewChange={handleViewChange}
-          onClose={() => setIsSearchOpen(false)}
-        />
-      )}
+      {/* Floating Quick Actions */}
+      <QuickActions />
     </div>
   )
 }

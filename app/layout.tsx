@@ -15,6 +15,7 @@ export default function RootLayout({
     <html lang="en" className="dark">
       <body className="min-h-screen bg-[#0A0F1A] text-gray-100 antialiased">
         {children}
+        <div className="scanline-overlay" aria-hidden="true" />
       </body>
     </html>
   )

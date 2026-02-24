@@ -10,14 +10,16 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        background: '#0A0F1A',
-        card: '#111827',
-        'card-border': '#1F2937',
+        background: '#060A14',
+        card: '#0C1120',
+        'card-border': '#1A2035',
         accent: '#63D866',
         'agent-jarvis': '#63D866',
         'agent-codebot': '#3A7BC8',
         'agent-reviewbot': '#B49A60',
         'agent-bizbot': '#9AED9C',
+        'neon-cyan': '#00D9FF',
+        'neon-purple': '#A855F7',
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
