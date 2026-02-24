@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 interface Agent {
   id: string
@@ -259,10 +259,83 @@ function SpeechBubble({ text, style: extraStyle }: { text: string; style?: React
    Main Component
    ═══════════════════════════════════════════════════════ */
 
+/* ── Time-of-day palette ── */
+type TimeOfDay = 'dawn' | 'day' | 'dusk' | 'night'
+
+function getTimeOfDay(): TimeOfDay {
+  const h = new Date().getHours()
+  if (h >= 6 && h < 8) return 'dawn'
+  if (h >= 8 && h < 18) return 'day'
+  if (h >= 18 && h < 20) return 'dusk'
+  return 'night'
+}
+
+const TIME_PALETTE: Record<TimeOfDay, {
+  roomBg: string
+  wallTop: string
+  wallBot: string
+  floor: string
+  floorLine: string
+  baseboard: string
+  windowBg: string
+  windowGradient: string
+  treeFill: string
+  treeDark: string
+  shaftColor: string
+  shaftOpacity: [number, number]
+  overlayTint: string
+  sparkleOpacity: number
+}> = {
+  dawn: {
+    roomBg: 'linear-gradient(180deg, #16120e 0%, #1e1812 100%)',
+    wallTop: '#3e2c1c', wallBot: '#5c3c2c',
+    floor: '#c0a474', floorLine: '#b09464', baseboard: '#2c1c0c',
+    windowBg: '#f0a848', windowGradient: 'linear-gradient(180deg, #f8c868 0%, #f0a848 40%, #d88830 100%)',
+    treeFill: '#3a6a1a', treeDark: '#2a5a0a',
+    shaftColor: 'rgba(240,180,80,0.12)', shaftOpacity: [0.06, 0.14],
+    overlayTint: 'rgba(240,180,80,0.04)', sparkleOpacity: 0.6,
+  },
+  day: {
+    roomBg: 'linear-gradient(180deg, #12100e 0%, #1a1510 100%)',
+    wallTop: '#3a2818', wallBot: '#5a3828',
+    floor: '#c4a878', floorLine: '#b89868', baseboard: '#2a1808',
+    windowBg: '#88e840', windowGradient: 'linear-gradient(180deg, #a8f860 0%, #88e840 40%, #68c830 100%)',
+    treeFill: '#4a8a1a', treeDark: '#3a7a0a',
+    shaftColor: 'rgba(140,220,80,0.10)', shaftOpacity: [0.05, 0.12],
+    overlayTint: 'transparent', sparkleOpacity: 0.9,
+  },
+  dusk: {
+    roomBg: 'linear-gradient(180deg, #100e0c 0%, #181210 100%)',
+    wallTop: '#342420', wallBot: '#4a3028',
+    floor: '#b09068', floorLine: '#a08058', baseboard: '#241408',
+    windowBg: '#c85828', windowGradient: 'linear-gradient(180deg, #e88848 0%, #c85828 40%, #883818 100%)',
+    treeFill: '#2a4a10', treeDark: '#1a3a08',
+    shaftColor: 'rgba(200,100,40,0.08)', shaftOpacity: [0.03, 0.08],
+    overlayTint: 'rgba(200,100,40,0.03)', sparkleOpacity: 0.4,
+  },
+  night: {
+    roomBg: 'linear-gradient(180deg, #0a0808 0%, #0e0c0a 100%)',
+    wallTop: '#241a14', wallBot: '#362418',
+    floor: '#8a7458', floorLine: '#7a6448', baseboard: '#1a0e04',
+    windowBg: '#0a1228', windowGradient: 'linear-gradient(180deg, #0c1830 0%, #0a1228 40%, #060e1e 100%)',
+    treeFill: '#0c1a08', treeDark: '#081408',
+    shaftColor: 'rgba(60,80,140,0.04)', shaftOpacity: [0.01, 0.04],
+    overlayTint: 'rgba(0,0,30,0.15)', sparkleOpacity: 0.0,
+  },
+}
+
 export default function OfficeView({ agents }: OfficeViewProps) {
   const [hoveredAgent, setHoveredAgent] = useState<string | null>(null)
+  const [timeOfDay, setTimeOfDay] = useState<TimeOfDay>(getTimeOfDay)
+
+  // Update time of day every minute
+  useEffect(() => {
+    const interval = setInterval(() => setTimeOfDay(getTimeOfDay()), 60000)
+    return () => clearInterval(interval)
+  }, [])
 
   const theme = (id: string): AgentTheme => AGENT_THEME[id] ?? FALLBACK_THEME
+  const pal = TIME_PALETTE[timeOfDay]
 
   return (
     <div
@@ -270,7 +343,7 @@ export default function OfficeView({ agents }: OfficeViewProps) {
         position: 'relative',
         width: '100%',
         height: '100%',
-        background: 'linear-gradient(180deg, #12100e 0%, #1a1510 100%)',
+        background: pal.roomBg,
         imageRendering: 'pixelated',
         overflow: 'hidden',
         fontFamily: 'monospace',
@@ -281,8 +354,8 @@ export default function OfficeView({ agents }: OfficeViewProps) {
       {/* ── CSS Keyframes ─────────────────────────── */}
       <style>{`
         @keyframes pxo-shaft {
-          0%, 100% { opacity: 0.05; transform: skewX(-20deg) translateX(0); }
-          50%       { opacity: 0.12; transform: skewX(-20deg) translateX(4px); }
+          0%, 100% { opacity: ${pal.shaftOpacity[0]}; transform: skewX(-20deg) translateX(0); }
+          50%       { opacity: ${pal.shaftOpacity[1]}; transform: skewX(-20deg) translateX(4px); }
         }
         @keyframes pxo-crt {
           0%   { opacity: 1;    }
@@ -292,8 +365,8 @@ export default function OfficeView({ agents }: OfficeViewProps) {
           100% { opacity: 1;    }
         }
         @keyframes pxo-sparkle {
-          0%, 100% { opacity: 0.1; }
-          50%      { opacity: 0.9; }
+          0%, 100% { opacity: ${pal.sparkleOpacity * 0.1}; }
+          50%      { opacity: ${pal.sparkleOpacity}; }
         }
         @keyframes pxo-type {
           0%, 100% { transform: translateY(0);    }
@@ -330,7 +403,8 @@ export default function OfficeView({ agents }: OfficeViewProps) {
           position: 'absolute',
           top: 0, left: 0, right: 0,
           height: '45%',
-          background: 'linear-gradient(180deg, #3a2818 0%, #5a3828 100%)',
+          background: `linear-gradient(180deg, ${pal.wallTop} 0%, ${pal.wallBot} 100%)`,
+          transition: 'background 2s ease',
         }}
       />
 
@@ -340,7 +414,8 @@ export default function OfficeView({ agents }: OfficeViewProps) {
           position: 'absolute',
           top: '44.5%', left: 0, right: 0,
           height: '1%',
-          backgroundColor: '#2a1808',
+          backgroundColor: pal.baseboard,
+          transition: 'background-color 2s ease',
         }}
       />
 
@@ -349,9 +424,10 @@ export default function OfficeView({ agents }: OfficeViewProps) {
         style={{
           position: 'absolute',
           top: '45%', left: 0, right: 0, bottom: 0,
-          backgroundColor: '#c4a878',
+          backgroundColor: pal.floor,
           backgroundImage:
-            'repeating-linear-gradient(90deg, transparent, transparent 60px, #b89868 60px, #b89868 62px)',
+            `repeating-linear-gradient(90deg, transparent, transparent 60px, ${pal.floorLine} 60px, ${pal.floorLine} 62px)`,
+          transition: 'background-color 2s ease',
         }}
       />
 
@@ -361,18 +437,31 @@ export default function OfficeView({ agents }: OfficeViewProps) {
           position: 'absolute',
           right: '6%', top: '4%',
           width: '28%', height: '34%',
-          backgroundColor: '#88e840',
-          border: '5px solid #5a3828',
-          boxShadow: 'inset 0 0 0 2px #4a2818, 0 2px 0 #3a2018',
+          backgroundColor: pal.windowBg,
+          border: `5px solid ${pal.wallBot}`,
+          boxShadow: `inset 0 0 0 2px ${pal.wallTop}, 0 2px 0 ${pal.baseboard}`,
           overflow: 'hidden',
+          transition: 'background-color 2s ease',
         }}
       >
-        {/* Nature gradient */}
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, #a8f860 0%, #88e840 40%, #68c830 100%)' }} />
+        {/* Sky / Nature gradient */}
+        <div style={{ position: 'absolute', inset: 0, background: pal.windowGradient, transition: 'background 2s ease' }} />
+        {/* Stars at night */}
+        {timeOfDay === 'night' && (
+          <>
+            <div style={{ position: 'absolute', top: '10%', left: '20%', width: 2, height: 2, backgroundColor: '#fff', borderRadius: '50%', opacity: 0.7 }} />
+            <div style={{ position: 'absolute', top: '18%', left: '55%', width: 2, height: 2, backgroundColor: '#fff', borderRadius: '50%', opacity: 0.5 }} />
+            <div style={{ position: 'absolute', top: '8%', left: '75%', width: 2, height: 2, backgroundColor: '#fff', borderRadius: '50%', opacity: 0.8 }} />
+            <div style={{ position: 'absolute', top: '25%', left: '35%', width: 1, height: 1, backgroundColor: '#fff', borderRadius: '50%', opacity: 0.4 }} />
+            <div style={{ position: 'absolute', top: '14%', left: '88%', width: 1, height: 1, backgroundColor: '#fff', borderRadius: '50%', opacity: 0.6 }} />
+            {/* Moon */}
+            <div style={{ position: 'absolute', top: '8%', right: '18%', width: 14, height: 14, backgroundColor: '#e8e0c8', borderRadius: '50%', boxShadow: '0 0 8px rgba(232,224,200,0.4)' }} />
+          </>
+        )}
         {/* Tree silhouettes */}
-        <div style={{ position: 'absolute', bottom: '5%', left: '10%', width: 22, height: 36, backgroundColor: '#4a8a1a', borderRadius: '4px 4px 0 0' }} />
-        <div style={{ position: 'absolute', bottom: '5%', left: '40%', width: 16, height: 26, backgroundColor: '#3a7a0a', borderRadius: '3px 3px 0 0' }} />
-        <div style={{ position: 'absolute', bottom: '5%', right: '10%', width: 24, height: 32, backgroundColor: '#4a8a1a', borderRadius: '4px 4px 0 0' }} />
+        <div style={{ position: 'absolute', bottom: '5%', left: '10%', width: 22, height: 36, backgroundColor: pal.treeFill, borderRadius: '4px 4px 0 0', transition: 'background-color 2s ease' }} />
+        <div style={{ position: 'absolute', bottom: '5%', left: '40%', width: 16, height: 26, backgroundColor: pal.treeDark, borderRadius: '3px 3px 0 0', transition: 'background-color 2s ease' }} />
+        <div style={{ position: 'absolute', bottom: '5%', right: '10%', width: 24, height: 32, backgroundColor: pal.treeFill, borderRadius: '4px 4px 0 0', transition: 'background-color 2s ease' }} />
         {/* Tree trunks */}
         <div style={{ position: 'absolute', bottom: '5%', left: 'calc(10% + 8px)', width: 4, height: 8, backgroundColor: '#6b4a2a' }} />
         <div style={{ position: 'absolute', bottom: '5%', left: 'calc(40% + 5px)', width: 3, height: 6, backgroundColor: '#6b4a2a' }} />
@@ -398,7 +487,7 @@ export default function OfficeView({ agents }: OfficeViewProps) {
             position: 'absolute',
             right: `${6 + i * 8}%`, top: '38%',
             width: '5%', height: '55%',
-            background: 'linear-gradient(180deg, rgba(140,220,80,0.1) 0%, rgba(140,220,80,0.02) 100%)',
+            background: `linear-gradient(180deg, ${pal.shaftColor} 0%, transparent 100%)`,
             animation: `pxo-shaft 5s ease-in-out infinite ${i * 1.2}s`,
             pointerEvents: 'none',
           }}
@@ -811,6 +900,20 @@ export default function OfficeView({ agents }: OfficeViewProps) {
           </div>
         )
       })}
+
+      {/* ══════════ TIME-OF-DAY OVERLAY ══════════ */}
+      {pal.overlayTint !== 'transparent' && (
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            backgroundColor: pal.overlayTint,
+            pointerEvents: 'none',
+            zIndex: 9,
+            transition: 'background-color 2s ease',
+          }}
+        />
+      )}
 
       {/* ══════════ LEGEND ══════════ */}
       <div

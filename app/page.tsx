@@ -370,9 +370,11 @@ export default function DashboardPage() {
         <span className="text-white text-xl">☰</span>
       </button>
 
-      {/* Main Content Area */}
+      {/* Main Content Area — shifts right to avoid sidebar overlap */}
       <main
-        className="flex-1 flex flex-col overflow-hidden"
+        className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 ${
+          sidebarCollapsed ? 'lg:ml-16 ml-0' : 'ml-[280px]'
+        }`}
       >
         {/* Particle Background Effect */}
         <div className="fixed inset-0 pointer-events-none overflow-hidden" style={{ zIndex: 0 }}>
