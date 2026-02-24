@@ -16,6 +16,9 @@ import CalendarView from '@/components/CalendarView'
 import GoalTracker from '@/components/GoalTracker'
 import QuickActions from '@/components/QuickActions'
 import HeaderBar from '@/components/HeaderBar'
+import CRMView from '@/components/CRMView'
+import LeadsView from '@/components/LeadsView'
+import JobsView from '@/components/JobsView'
 
 interface Agent {
   id: string
@@ -50,7 +53,7 @@ interface Snapshot {
 const POLL_INTERVAL = 5000
 const SOUND_ENABLED_KEY = 'casafresh-sound-enabled'
 
-type ViewType = 'office' | 'calendar' | 'goals' | 'analytics' | 'activity' | 'memory' | 'articles' | 'videos' | 'settings'
+type ViewType = 'office' | 'calendar' | 'goals' | 'crm' | 'leads' | 'jobs' | 'analytics' | 'activity' | 'memory' | 'articles' | 'videos' | 'settings'
 
 export default function DashboardPage() {
   const [agents, setAgents] = useState<Agent[]>([])
@@ -186,6 +189,15 @@ export default function DashboardPage() {
 
       case 'goals':
         return <GoalTracker />
+
+      case 'crm':
+        return <CRMView />
+
+      case 'leads':
+        return <LeadsView />
+
+      case 'jobs':
+        return <JobsView />
 
       case 'analytics':
         return (

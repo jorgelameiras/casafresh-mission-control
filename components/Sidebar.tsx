@@ -15,7 +15,7 @@ interface NavItem {
   id: ViewType
 }
 
-type ViewType = 'office' | 'calendar' | 'goals' | 'analytics' | 'activity' | 'memory' | 'articles' | 'videos' | 'settings'
+type ViewType = 'office' | 'calendar' | 'goals' | 'crm' | 'leads' | 'jobs' | 'analytics' | 'activity' | 'memory' | 'articles' | 'videos' | 'settings'
 
 interface SidebarProps {
   agents: Agent[]
@@ -29,6 +29,9 @@ const NAV_ITEMS: NavItem[] = [
   { icon: '🏢', label: 'Office', id: 'office' },
   { icon: '📅', label: 'Calendar', id: 'calendar' },
   { icon: '🎯', label: 'Goals', id: 'goals' },
+  { icon: '👥', label: 'CRM', id: 'crm' },
+  { icon: '📋', label: 'Leads', id: 'leads' },
+  { icon: '🔧', label: 'Jobs', id: 'jobs' },
   { icon: '📊', label: 'Analytics', id: 'analytics' },
   { icon: '📝', label: 'Activity', id: 'activity' },
   { icon: '💾', label: 'Memory', id: 'memory' },
