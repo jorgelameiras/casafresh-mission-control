@@ -39,3 +39,5 @@ playwright-report/
 # Claude Code context files
 CLAUDE.md
 **/CLAUDE.md
+.env
+.data/
